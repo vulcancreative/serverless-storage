@@ -33,7 +33,7 @@ class Operations {
       TableName: tableName,
     };
 
-    return Operations.dynamo()
+    return this.dynamo()
       .getItem(params)
       .promise()
       .then((response) => JSON.parse(response.Item.JSON.S));
@@ -58,7 +58,7 @@ class Operations {
       TableName: tableName,
     };
 
-    return Operations.dynamo()
+    return this.dynamo()
       .putItem(params)
       .promise()
       .then(() => {
@@ -78,7 +78,7 @@ class Operations {
       TableName: tableName,
     };
 
-    return Operations.dynamo()
+    return this.dynamo()
       .deleteItem(params)
       .promise()
       .then(() => {

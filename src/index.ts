@@ -19,8 +19,6 @@ class ServerlessStorage {
     this.serverless = serverless;
     this.options = options;
 
-    Operations.serverless = serverless;
-
     Log.pluginName = "Serverless Storage";
     Log.serverless = serverless;
 
