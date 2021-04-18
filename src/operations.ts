@@ -1,28 +1,22 @@
 import * as AWS from "aws-sdk";
 
-interface OperationsConfig {
-  tableName: string;
-  region: string;
-}
-
 class Operations {
-  private config: OperationsConfig;
-
-  constructor(config: OperationsConfig) {
-    this.config = config;
-  }
+  private static config = {
+    tableName: process.env.STORAGE_TABLE_NAME,
+    region: process.env.AWS_REGION,
+  };
 
   // eslint-disable-next-line
-  private dynamo() {
+  private static dynamo() {
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
-      region: this.config.region,
+      region: Operations.config.region,
     });
   }
 
   // eslint-disable-next-line
-  public getItem(key: string): Promise<object> {
-    const tableName = this.config.tableName;
+  public static getItem(key: string): Promise<object> {
+    const tableName = Operations.config.tableName;
 
     const params = {
       Key: {
@@ -33,15 +27,15 @@ class Operations {
       TableName: tableName,
     };
 
-    return this.dynamo()
+    return Operations.dynamo()
       .getItem(params)
       .promise()
       .then((response) => JSON.parse(response.Item.JSON.S));
   }
 
   // eslint-disable-next-line
-  public putItem(key: string, data: object): Promise<void> {
-    const tableName = this.config.tableName;
+  public static putItem(key: string, data: object): Promise<void> {
+    const tableName = Operations.config.tableName;
 
     const params = {
       Item: {
@@ -58,7 +52,7 @@ class Operations {
       TableName: tableName,
     };
 
-    return this.dynamo()
+    return Operations.dynamo()
       .putItem(params)
       .promise()
       .then(() => {
@@ -66,8 +60,8 @@ class Operations {
       });
   }
 
-  public removeItem(key: string): Promise<void> {
-    const tableName = this.config.tableName;
+  public static removeItem(key: string): Promise<void> {
+    const tableName = Operations.config.tableName;
 
     const params = {
       Key: {
@@ -78,7 +72,7 @@ class Operations {
       TableName: tableName,
     };
 
-    return this.dynamo()
+    return Operations.dynamo()
       .deleteItem(params)
       .promise()
       .then(() => {
