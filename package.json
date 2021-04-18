@@ -1,6 +1,6 @@
 {
   "name": "@vulcancreative/serverless-storage",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "engines": {
     "node": ">=14.15.0"
   },
@@ -16,7 +16,8 @@
   "scripts": {
     "test": "",
     "integration-test": "",
-    "build": "tsc --project ."
+    "build": "tsc --project .",
+    "prepare": "npm run build"
   },
   "files": [
     "*.js",
