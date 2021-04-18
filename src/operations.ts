@@ -6,19 +6,23 @@ interface OperationsConfig {
 }
 
 class Operations {
-  public static config: OperationsConfig;
+  private config: OperationsConfig;
+
+  constructor(config: OperationsConfig) {
+    this.config = config;
+  }
 
   // eslint-disable-next-line
-  private static dynamo() {
+  private dynamo() {
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
-      region: Operations.config.region,
+      region: this.config.region,
     });
   }
 
   // eslint-disable-next-line
-  public static getItem(key: string): Promise<object> {
-    const tableName = Operations.config.tableName;
+  public getItem(key: string): Promise<object> {
+    const tableName = this.config.tableName;
 
     const params = {
       Key: {
@@ -36,8 +40,8 @@ class Operations {
   }
 
   // eslint-disable-next-line
-  public static putItem(key: string, data: object): Promise<void> {
-    const tableName = Operations.config.tableName;
+  public putItem(key: string, data: object): Promise<void> {
+    const tableName = this.config.tableName;
 
     const params = {
       Item: {
@@ -62,8 +66,8 @@ class Operations {
       });
   }
 
-  public static removeItem(key: string): Promise<void> {
-    const tableName = Operations.config.tableName;
+  public removeItem(key: string): Promise<void> {
+    const tableName = this.config.tableName;
 
     const params = {
       Key: {
