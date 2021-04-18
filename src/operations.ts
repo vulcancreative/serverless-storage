@@ -1,27 +1,24 @@
 import * as AWS from "aws-sdk";
 
-import createHook from "./hooks/create";
-import removeHook from "./hooks/remove";
-import { ServerlessInstance } from "./types";
+interface OperationsConfig {
+  tableName: string;
+  region: string;
+}
 
 class Operations {
-  public static serverless: ServerlessInstance;
+  public static config: OperationsConfig;
 
   // eslint-disable-next-line
   private static dynamo() {
-    const opts = Operations.serverless.service.custom.serverlessStorage;
-    const region = Operations.serverless.providers.aws.getRegion();
-
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
-      region: region || opts.defaultRegion,
+      region: Operations.config.region,
     });
   }
 
   // eslint-disable-next-line
   public static getItem(key: string): Promise<object> {
-    const opts = Operations.serverless.service.custom.serverlessStorage;
-    const tableName = opts.tableName;
+    const tableName = Operations.config.tableName;
 
     const params = {
       Key: {
@@ -40,8 +37,7 @@ class Operations {
 
   // eslint-disable-next-line
   public static putItem(key: string, data: object): Promise<void> {
-    const opts = Operations.serverless.service.custom.serverlessStorage;
-    const tableName = opts.tableName;
+    const tableName = Operations.config.tableName;
 
     const params = {
       Item: {
@@ -67,8 +63,7 @@ class Operations {
   }
 
   public static removeItem(key: string): Promise<void> {
-    const opts = Operations.serverless.service.custom.serverlessStorage;
-    const tableName = opts.tableName;
+    const tableName = Operations.config.tableName;
 
     const params = {
       Key: {
@@ -82,14 +77,6 @@ class Operations {
     return Operations.dynamo()
       .deleteItem(params)
       .promise()
-      .then(() => {
-        return;
-      });
-  }
-
-  public static clear(): Promise<void> {
-    return removeHook(Operations.serverless)
-      .then(() => createHook(Operations.serverless))
       .then(() => {
         return;
       });
