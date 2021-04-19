@@ -1,0 +1,40 @@
+name: Changelog
+
+on:
+  pull_request:
+    types:
+      - "closed"
+
+jobs:
+  generate_changelog:
+    runs-on: ubuntu-latest
+    name: Generate changelog for master branch
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.CHANGELOG_KEY }}
+          name: id_rsa
+          known_hosts: ${{ secrets.CHANGELOG_KNOWNHOSTS }}
+          if_key_exists: fail
+
+      - name: Generate changelog
+        uses: charmixer/auto-changelog-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Commit files
+        env:
+          KEY: ${{ secrets.CHANGELOG_KEY }}
+        run: |
+          git config --global user.email "changelog@vulcanca.com"
+          git config --global user.name "Changelog Bot"
+          git add CHANGELOG.md && git commit -m 'Updated CHANGELOG.md' && echo "push=true" >> $GITHUB_ENV || echo "No changes to CHANGELOG.md"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "master"
