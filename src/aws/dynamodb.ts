@@ -87,7 +87,14 @@ class DynamoDB {
     return DynamoDB.dial()
       .describeTable(config)
       .promise()
-      .then((response) => response.Table.TableStatus === "ACTIVE");
+      .then((response) => response.Table.TableStatus === "ACTIVE")
+      .catch((err) => {
+        if (err.message.indexOf("resource not found: Table") > -1) {
+          return Promise.resolve(false);
+        }
+
+        return Promise.reject(false);
+      });
   }
 
   public static waitCreate(tableName: string): Promise<boolean> {
