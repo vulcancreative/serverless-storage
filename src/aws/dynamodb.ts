@@ -2,7 +2,7 @@ import * as AWS from "aws-sdk";
 
 class DynamoDB {
   // eslint-disable-next-line
-  private static dial(region: string = process.env.AWS_REGION) {
+  private static dial(region: string = process.env.AWS_REGION || process.env.STORAGE_DEFAULT_REGION) {
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
       region,
@@ -87,7 +87,14 @@ class DynamoDB {
     return DynamoDB.dial()
       .describeTable(config)
       .promise()
-      .then((response) => response.Table.TableStatus === "ACTIVE");
+      .then((response) => response.Table.TableStatus === "ACTIVE")
+      .catch((err) => {
+        if (err.message.indexOf("resource not found: Table") > -1) {
+          return Promise.resolve(false);
+        }
+
+        return Promise.reject(false);
+      });
   }
 
   public static waitCreate(tableName: string): Promise<boolean> {

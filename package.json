@@ -1,6 +1,6 @@
 {
   "name": "@vulcancreative/serverless-storage",
-  "version": "1.1.0",
+  "version": "1.1.2-alpha2",
   "engines": {
     "node": ">=14.15.0"
   },
