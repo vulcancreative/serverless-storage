@@ -2,7 +2,7 @@ import * as AWS from "aws-sdk";
 
 class DynamoDB {
   // eslint-disable-next-line
-  private static dial(region: string = process.env.AWS_REGION) {
+  private static dial(region: string = process.env.AWS_REGION || process.env.STORAGE_DEFAULT_REGION) {
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
       region,
