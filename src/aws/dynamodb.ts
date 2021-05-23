@@ -79,7 +79,7 @@ class DynamoDB {
     );
   }
 
-  public static exists(tableName: string): Promise<boolean> {
+  public static existsTable(tableName: string): Promise<boolean> {
     const config = {
       TableName: tableName,
     };
@@ -97,12 +97,31 @@ class DynamoDB {
       });
   }
 
+  public static existsKey(tableName: string, key: string): Promise<boolean> {
+    const config = {
+      Key: {
+        ID: {
+          S: key,
+        },
+      },
+      TableName: tableName,
+    };
+
+    return DynamoDB.dial()
+      .getItem(config)
+      .promise()
+      .then(
+        (response) =>
+          typeof response.Item !== "undefined" && response.Item !== null
+      );
+  }
+
   public static waitCreate(tableName: string): Promise<boolean> {
     const config = {
       TableName: tableName,
     };
 
-    return DynamoDB.exists(tableName).then((exists) => {
+    return DynamoDB.existsTable(tableName).then((exists) => {
       if (exists) return Promise.resolve(true);
       return Promise.resolve()
         .then(() => DynamoDB.create(tableName))
@@ -116,7 +135,7 @@ class DynamoDB {
       TableName: tableName,
     };
 
-    return DynamoDB.exists(tableName).then((exists) => {
+    return DynamoDB.existsTable(tableName).then((exists) => {
       if (!exists) return Promise.resolve(true);
       return Promise.resolve()
         .then(() => DynamoDB.remove(tableName))

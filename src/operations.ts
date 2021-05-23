@@ -6,6 +6,11 @@ class Operations {
     region: process.env.AWS_REGION,
   };
 
+  public static hasItem(key: string): Promise<boolean> {
+    const tableName = Operations.config.tableName;
+    return DynamoDB.existsKey(tableName, key);
+  }
+
   // eslint-disable-next-line
   public static getItem(key: string): Promise<object> {
     const tableName = Operations.config.tableName;
