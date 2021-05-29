@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Implement key-checking via `hasItem` routine [\#13](https://github.com/vulcancreative/serverless-storage/issues/13)
 - Improve region flexibility [\#11](https://github.com/vulcancreative/serverless-storage/issues/11)
 - Setup automatic CHANGELOG [\#5](https://github.com/vulcancreative/serverless-storage/issues/5)
 - Ensure if a table doesn't exist on-write, one is created first [\#2](https://github.com/vulcancreative/serverless-storage/issues/2)
@@ -13,6 +14,7 @@
 
 **Merged pull requests:**
 
+- Implement key-checking via routine; bug fix. Closes \#13 and \#15 [\#14](https://github.com/vulcancreative/serverless-storage/pull/14) ([chris-calo](https://github.com/chris-calo))
 - Improve region flexibility. Closes \#11 [\#12](https://github.com/vulcancreative/serverless-storage/pull/12) ([chris-calo](https://github.com/chris-calo))
 - Ensure if a table doesn't exist on-write, one is created first. Closes \#2 [\#10](https://github.com/vulcancreative/serverless-storage/pull/10) ([chris-calo](https://github.com/chris-calo))
 - Setup automatic CHANGELOG. Closes \#5 [\#7](https://github.com/vulcancreative/serverless-storage/pull/7) ([chris-calo](https://github.com/chris-calo))
