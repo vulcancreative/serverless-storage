@@ -52,6 +52,7 @@ class ServerlessStorage {
     this.hooks = {
       "after:info:info": () => this.afterInfoHook(),
       "before:deploy:deploy": () => this.beforeDeployHook(),
+      "after:remove:remove": () => this.storageRemoveHook(),
       "storage:create:create": () => this.storageCreateHook(),
       "storage:purge:delete": () => this.storagePurgeHook(),
       "storage:remove:delete": () => this.storageRemoveHook(),
