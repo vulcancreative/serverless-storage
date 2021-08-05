@@ -2,7 +2,20 @@
 
 ## [Unreleased](https://github.com/vulcancreative/serverless-storage/tree/HEAD)
 
-[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/628c28146222aa07cc32a9a6179bf13686942656...HEAD)
+[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/v1.1.3...HEAD)
+
+**Implemented enhancements:**
+
+- Defer environment variable propagation [\#15](https://github.com/vulcancreative/serverless-storage/issues/15)
+- Ensure that running `sls remove` deletes the DynamoDB table [\#8](https://github.com/vulcancreative/serverless-storage/issues/8)
+
+**Merged pull requests:**
+
+- Ensure that running sls remove deletes the DynamoDB table. Closes \#8 [\#16](https://github.com/vulcancreative/serverless-storage/pull/16) ([chris-calo](https://github.com/chris-calo))
+
+## [v1.1.3](https://github.com/vulcancreative/serverless-storage/tree/v1.1.3) (2021-05-29)
+
+[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/628c28146222aa07cc32a9a6179bf13686942656...v1.1.3)
 
 **Implemented enhancements:**
 
