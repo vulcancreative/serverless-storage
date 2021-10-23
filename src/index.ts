@@ -35,9 +35,11 @@ class ServerlessStorage {
             options: {
               all: {
                 usage: "Removes all data from the storage table",
+                type: "boolean",
               },
               key: {
                 usage: "Removes data from table for a given key",
+                type: "string",
               },
             },
           },
