@@ -2,7 +2,19 @@
 
 ## [Unreleased](https://github.com/vulcancreative/serverless-storage/tree/HEAD)
 
-[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/v1.1.3...HEAD)
+[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/v1.1.4...HEAD)
+
+**Implemented enhancements:**
+
+- Patch options usage with proper type definition for Framework v3 [\#17](https://github.com/vulcancreative/serverless-storage/issues/17)
+
+**Merged pull requests:**
+
+- Patch options usage with proper type definition for Framework v3. Closes \#17 [\#18](https://github.com/vulcancreative/serverless-storage/pull/18) ([chris-calo](https://github.com/chris-calo))
+
+## [v1.1.4](https://github.com/vulcancreative/serverless-storage/tree/v1.1.4) (2021-08-05)
+
+[Full Changelog](https://github.com/vulcancreative/serverless-storage/compare/v1.1.3...v1.1.4)
 
 **Implemented enhancements:**
 
