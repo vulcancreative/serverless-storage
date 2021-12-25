@@ -1,18 +1,28 @@
 import * as AWS from "aws-sdk";
 
+import { whatever } from "../types";
+
+const loc = process.env.AWS_REGION || process.env.STORAGE_DEFAULT_REGION;
+
 class DynamoDB {
-  // eslint-disable-next-line
-  private static dial(region: string = process.env.AWS_REGION || process.env.STORAGE_DEFAULT_REGION) {
+  private static dial(region: string = loc): whatever {
     return new AWS.DynamoDB({
       apiVersion: "2012-08-10",
       region,
     });
   }
 
-  public static create(tableName: string): Promise<string> {
+  public static async create(tableName: string): Promise<string> {
+    const kmsKey = process.env.STORAGE_KMS_KEY;
+    const hasKey = !!kmsKey;
+
     const config = {
       TableName: tableName,
       AttributeDefinitions: [
+        {
+          AttributeName: "PK",
+          AttributeType: "S",
+        },
         {
           AttributeName: "ID",
           AttributeType: "S",
@@ -21,187 +31,435 @@ class DynamoDB {
       BillingMode: "PAY_PER_REQUEST",
       KeySchema: [
         {
-          AttributeName: "ID",
+          AttributeName: "PK",
           KeyType: "HASH",
         },
+        {
+          AttributeName: "ID",
+          KeyType: "RANGE",
+        },
       ],
-      SSESpecification: {
-        Enabled: true,
-        KMSMasterKeyId: process.env.STORAGE_KMS_KEY,
-        SSEType: "KMS",
-      },
+      ...(hasKey
+        ? {
+            SSESpecification: {
+              Enabled: true,
+              KMSMasterKeyId: kmsKey,
+              SSEType: "KMS",
+            },
+          }
+        : {}),
     };
 
-    return DynamoDB.dial()
-      .createTable(config)
-      .promise()
-      .then((response) => {
-        const { TableName } = response.TableDescription;
-        const message = `Successfully created storage table "${TableName}"`;
+    try {
+      const response = await DynamoDB.dial().createTable(config).promise();
+      const { TableName } = response.TableDescription;
+      const message = `Successfully created storage table "${TableName}"`;
 
-        return message;
-      })
-      .catch((err) => {
-        if (err.message.indexOf("Table already exists") > -1) {
-          return "Storage already exists";
-        }
+      return message;
+    } catch (err) {
+      if (err.message.indexOf("Table already exists") > -1) {
+        return "Storage already exists";
+      }
 
-        return `Failed to create storage : ${err.message}`;
-      });
+      return `Failed to create storage : ${err.message}`;
+    }
   }
 
-  public static remove(tableName: string): Promise<string> {
+  public static async remove(tableName: string): Promise<string> {
     const config = {
       TableName: tableName,
     };
 
-    return DynamoDB.dial()
-      .deleteTable(config)
-      .promise()
-      .then((response) => {
-        const { TableName } = response.TableDescription;
-        const message = `Successfully remove storage table "${TableName}"`;
+    try {
+      const response = await DynamoDB.dial().deleteTable(config).promise();
+      const { TableName } = response.TableDescription;
+      const message = `Successfully remove storage table "${TableName}"`;
 
-        return message;
-      })
-      .catch((err) => {
-        if (err.message.indexOf("not found") > -1) {
-          return "Storage doesn't exist";
-        }
+      return message;
+    } catch (err) {
+      if (err.message.indexOf("not found") > -1) {
+        return "Storage doesn't exist";
+      }
 
-        return `Failed to remove storage : ${err.message}`;
-      });
+      return `Failed to remove storage : ${err.message}`;
+    }
   }
 
-  public static purge(tableName: string): Promise<string> {
-    return Promise.reject(
-      `[SERVERLESS STORAGE PURGE] not yet implemented; tableName : ${tableName}`
+  public static async purge(tableName: string): Promise<string> {
+    const res = await Promise.reject(
+      `[SERVERLESS STORAGE PURGE] not yet implemented; ` +
+        `tableName : ${tableName}`
     );
+
+    return res;
   }
 
-  public static existsTable(tableName: string): Promise<boolean> {
+  public static async existsTable(tableName: string): Promise<boolean> {
     const config = {
       TableName: tableName,
     };
 
-    return DynamoDB.dial()
-      .describeTable(config)
-      .promise()
-      .then((response) => response.Table.TableStatus === "ACTIVE")
-      .catch((err) => {
-        if (err.message.indexOf("resource not found: Table") > -1) {
-          return Promise.resolve(false);
+    try {
+      const response = await DynamoDB.dial().describeTable(config).promise();
+      const res = response.Table.TableStatus === "ACTIVE";
+      return res;
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+
+      if (err.message.indexOf("resource not found: Table") > -1) {
+        return false;
+      }
+
+      return false;
+    }
+  }
+
+  public static async existsKey(
+    tableName: string,
+    key: string | string[]
+  ): Promise<boolean> {
+    if (Array.isArray(key)) throw "Arrays not supported in existsKey";
+    if (!DynamoDB.validKey(key)) throw `Key "${key}" is invalid`;
+
+    const keyParts = key.split(":");
+    const pk = keyParts[0];
+    const id = keyParts.slice(1).join(":");
+
+    const params = {
+      Key: {
+        PK: {
+          S: pk,
+        },
+        ID: {
+          S: id,
+        },
+      },
+      TableName: tableName,
+    };
+
+    if (DynamoDB.verboseMode()) {
+      console.log("[existsKey] params : ", JSON.stringify(params, null, 2));
+    }
+
+    try {
+      const response = await DynamoDB.dial().getItem(params).promise();
+
+      const res =
+        typeof response.Item !== "undefined" && response.Item !== null;
+
+      return res;
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+      return false;
+    }
+  }
+
+  public static async waitCreate(tableName: string): Promise<boolean> {
+    try {
+      const exists = await DynamoDB.existsTable(tableName);
+      if (exists) return true;
+
+      await DynamoDB.create(tableName);
+      await DynamoDB.waitForCreate(tableName);
+
+      return true;
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+      return false;
+    }
+  }
+
+  public static async waitRemove(tableName: string): Promise<boolean> {
+    try {
+      const exists = await DynamoDB.existsTable(tableName);
+      if (!exists) return true;
+
+      await DynamoDB.remove(tableName);
+      await DynamoDB.waitForRemove(tableName);
+
+      return true;
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+      return false;
+    }
+  }
+
+  public static async getData(
+    tableName: string,
+    key: string | string[]
+  ): Promise<whatever | whatever[]> {
+    const isMultiple = Array.isArray(key);
+
+    const params = {
+      TableName: tableName,
+      ...DynamoDB.parseQueryParams((isMultiple ? key : [key]) as string[]),
+    };
+
+    if (DynamoDB.verboseMode()) {
+      console.log("[getData] params : ", JSON.stringify(params, null, 2));
+    }
+
+    try {
+      const response = await DynamoDB.dial().query(params).promise();
+      const valid = !!response?.Items;
+
+      if (valid) {
+        const isMultiple = response.Count > 1;
+
+        const items = response.Items.map((item) =>
+          JSON.parse(item.JSON.S)
+        ).sort((a, b) => a.createdAt - b.createdAt);
+
+        const res = isMultiple ? items : items[0];
+
+        return res;
+      }
+
+      return null;
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+      return null;
+    }
+  }
+
+  public static async putData(
+    tableName: string,
+    key: string,
+    data: whatever | whatever[]
+  ): Promise<void> {
+    const isMultiple = Array.isArray(data);
+    const basis = (isMultiple ? data : [data]) as whatever[];
+
+    if (!DynamoDB.validKey(key)) throw `Key "${key}" is invalid`;
+
+    const keyParts = key.split(":");
+    const pk = keyParts[0];
+    const id = keyParts.slice(1).join(":");
+
+    const promises = basis.map(async (item) => {
+      const valid = !!item;
+
+      const itemOld = await DynamoDB.getData(tableName, key);
+
+      const now = `${new Date().toISOString()}`;
+
+      if (item?.createdAt) {
+        item.createdAt = new Date(item.createdAt).toISOString() || null;
+      }
+
+      if (item?.updatedAt) {
+        item.updatedAt = new Date(item.updatedAt).toISOString() || null;
+      }
+
+      const params = {
+        Item: {
+          PK: {
+            S: pk,
+          },
+          ID: {
+            S: id,
+          },
+          JSON: {
+            S: JSON.stringify(valid ? item : {}),
+          },
+          CreatedAt: {
+            S: item?.createdAt || itemOld?.createdAt || now,
+          },
+          UpdatedAt: {
+            S: item?.updatedAt || now,
+          },
+        },
+        TableName: tableName,
+      };
+
+      if (DynamoDB.verboseMode()) {
+        console.log("[putData] params : ", JSON.stringify(params, null, 2));
+      }
+
+      const res = await DynamoDB.dial().putItem(params).promise();
+      return res;
+    });
+
+    try {
+      await Promise.all(promises);
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+    }
+  }
+
+  public static async removeData(
+    tableName: string,
+    key: string | string[]
+  ): Promise<void> {
+    const isMultiple = Array.isArray(key);
+    const basis = (isMultiple ? key : [key]) as string[];
+
+    const promises = basis.map((item) => {
+      if (!DynamoDB.validKey(item)) throw `Key "${item}" is invalid`;
+
+      const itemParts = item.split(":");
+      const pk = itemParts[0];
+      const id = itemParts.slice(1).join(":");
+
+      const params = {
+        Key: {
+          PK: {
+            S: pk,
+          },
+          ID: {
+            S: id,
+          },
+        },
+        TableName: tableName,
+      };
+
+      if (DynamoDB.verboseMode()) {
+        console.log("[removeData] params : ", JSON.stringify(params, null, 2));
+      }
+
+      return DynamoDB.dial().deleteItem(params).promise();
+    });
+
+    try {
+      await Promise.all(promises);
+    } catch (err) {
+      if (DynamoDB.verboseMode()) console.log(err);
+    }
+  }
+
+  public static verboseMode(): boolean {
+    const modeRaw = process.env.STORAGE_VERBOSE_MODE;
+    const mode = `${modeRaw}`.trim().toLowerCase();
+
+    switch (mode) {
+      case "true":
+      case "t":
+      case "yes":
+      case "ja":
+        return true;
+      default:
+        return false;
+    }
+  }
+
+  public static validKey(key: string): boolean {
+    const r = /(\S+:\S+)+(:\*)?/;
+    return r.test(key) && key[key.length - 1] !== ":";
+  }
+
+  public static parseParamExact(key: string, idx: number): whatever {
+    const label = `:id${idx}`;
+    return { label, expression: `#id = ${label}`, value: key };
+  }
+
+  public static parseParamWildcard(key: string, idx: number): whatever {
+    const pos = key.indexOf("*");
+    const valid = pos === key.length - 1;
+    if (!valid) throw `Wildcards must be at the end of key "${key}"`;
+
+    const label = `:id${idx}`;
+    const value = key.replace(/:?\*?$/, "");
+
+    return { label, expression: `begins_with(#id, ${label})`, value };
+  }
+
+  public static parseQueryParams(keys: string[]): whatever {
+    const pks = [];
+    const keyAttributeValues = {};
+
+    const keyExpression = keys.reduce(
+      (a, c, i) => {
+        if (!DynamoDB.validKey(c)) throw `Key "${c}" is invalid`;
+
+        const itemParts = c.split(":");
+        const pk = itemParts[0];
+        const id = itemParts.slice(1).join(":");
+
+        if (pks.indexOf(pk) < 0) {
+          pks.push(pk);
+
+          const pkFirst = pks.length === 0;
+          const pkLabel = `:pk${pks.length - 1}`;
+
+          a.pk = `${a.pk}${pkFirst ? " OR " : ""}#pk = ${pkLabel}`;
+          keyAttributeValues[pkLabel] = { S: pk };
         }
 
-        return Promise.reject(false);
-      });
-  }
+        const info =
+          id.indexOf("*") > -1
+            ? DynamoDB.parseParamWildcard(id, i)
+            : DynamoDB.parseParamExact(id, i);
 
-  public static existsKey(tableName: string, key: string): Promise<boolean> {
-    const config = {
-      Key: {
-        ID: {
-          S: key,
-        },
+        keyAttributeValues[info.label] = { S: info.value };
+
+        const idFirst = i === 0;
+        a.id = `${a.id}${idFirst ? "" : " AND "}${info.expression}`;
+
+        return a;
       },
-      TableName: tableName,
+      { pk: "", id: "" }
+    );
+
+    if (pks.length > 1) keyExpression.pk = `(${keyExpression.pk})`;
+
+    const params = {
+      KeyConditionExpression: `${keyExpression.pk} AND ${keyExpression.id}`,
+      ExpressionAttributeNames: {
+        "#pk": "PK",
+        "#id": "ID",
+      },
+      ExpressionAttributeValues: keyAttributeValues,
     };
 
-    return DynamoDB.dial()
-      .getItem(config)
-      .promise()
-      .then(
-        (response) =>
-          typeof response.Item !== "undefined" && response.Item !== null
-      );
+    return params;
   }
 
-  public static waitCreate(tableName: string): Promise<boolean> {
-    const config = {
-      TableName: tableName,
+  private static async waitForCreate(tableName: string): Promise<boolean> {
+    let ok = false;
+    let interval = null;
+
+    const check = async (): Promise<boolean> => {
+      const res = await DynamoDB.existsTable(tableName);
+      return res;
     };
 
-    return DynamoDB.existsTable(tableName).then((exists) => {
-      if (exists) return Promise.resolve(true);
-      return Promise.resolve()
-        .then(() => DynamoDB.create(tableName))
-        .then(() => DynamoDB.dial().waitFor("tableExists", config).promise())
-        .then((response) => response.Table.TableStatus === "ACTIVE");
+    await new Promise((resolve) => {
+      interval = setInterval(() => {
+        check().then((res) => {
+          if (res) {
+            ok = true;
+            clearInterval(interval);
+            return resolve(ok);
+          }
+        });
+      }, 250);
     });
+
+    return ok;
   }
 
-  public static waitRemove(tableName: string): Promise<boolean> {
-    const config = {
-      TableName: tableName,
+  private static async waitForRemove(tableName: string): Promise<boolean> {
+    let ok = false;
+    let interval = null;
+
+    const check = async (): Promise<boolean> => {
+      const res = await DynamoDB.existsTable(tableName);
+      return res;
     };
 
-    return DynamoDB.existsTable(tableName).then((exists) => {
-      if (!exists) return Promise.resolve(true);
-      return Promise.resolve()
-        .then(() => DynamoDB.remove(tableName))
-        .then(() => DynamoDB.dial().waitFor("tableNotExists", config).promise())
-        .then(() => true);
+    await new Promise((resolve) => {
+      interval = setInterval(() => {
+        check().then((res) => {
+          if (!res) {
+            ok = true;
+            clearInterval(interval);
+            return resolve(ok);
+          }
+        });
+      }, 250);
     });
-  }
 
-  // eslint-disable-next-line
-  public static getItem(tableName: string, key: string): Promise<object> {
-    const params = {
-      Key: {
-        ID: {
-          S: key,
-        },
-      },
-      TableName: tableName,
-    };
-
-    return DynamoDB.dial()
-      .getItem(params)
-      .promise()
-      .then((response) => JSON.parse(response.Item.JSON.S));
-  }
-
-  // eslint-disable-next-line
-  public static putItem(tableName: string, key: string, data: object): Promise<void> {
-    const params = {
-      Item: {
-        ID: {
-          S: key,
-        },
-        JSON: {
-          S: JSON.stringify(data),
-        },
-        UpdatedAt: {
-          S: `${new Date().toUTCString()}`,
-        },
-      },
-      TableName: tableName,
-    };
-
-    return DynamoDB.dial()
-      .putItem(params)
-      .promise()
-      .then(() => {
-        return;
-      });
-  }
-
-  public static removeItem(tableName: string, key: string): Promise<void> {
-    const params = {
-      Key: {
-        ID: {
-          S: key,
-        },
-      },
-      TableName: tableName,
-    };
-
-    return DynamoDB.dial()
-      .deleteItem(params)
-      .promise()
-      .then(() => {
-        return;
-      });
+    return ok;
   }
 }
 
