@@ -1,3 +1,5 @@
+type whatever = any;
+
 interface ServerlessStorage {
   tableName: string | undefined;
   kmsKey: string;
@@ -49,4 +51,4 @@ interface ServerlessOptions {
   stage: string;
 }
 
-export { ServerlessInstance, ServerlessOptions, ServerlessStorage };
+export { ServerlessInstance, ServerlessOptions, ServerlessStorage, whatever };

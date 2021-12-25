@@ -1,4 +1,5 @@
 import DynamoDB from "./aws/dynamodb";
+import { whatever } from "./types";
 
 type OperationsConfig = {
   tableName: string;
@@ -13,28 +14,129 @@ class Operations {
     };
   }
 
-  public static hasItem(key: string): Promise<boolean> {
-    const tableName = Operations.config().tableName;
-    return DynamoDB.existsKey(tableName, key);
+  public static createTable(
+    tableName: string,
+    wait = false
+  ): Promise<whatever> {
+    if (wait) return DynamoDB.waitCreate(tableName);
+    return DynamoDB.create(tableName);
   }
 
-  // eslint-disable-next-line
-  public static getItem(key: string): Promise<object> {
-    const tableName = Operations.config().tableName;
-    return DynamoDB.getItem(tableName, key);
+  public static removeTable(
+    tableName: string,
+    wait = false
+  ): Promise<whatever> {
+    if (wait) return DynamoDB.waitRemove(tableName);
+    return DynamoDB.remove(tableName);
   }
 
-  // eslint-disable-next-line
-  public static putItem(key: string, data: object): Promise<void> {
-    const tableName = Operations.config().tableName;
-    return DynamoDB.waitCreate(tableName).then(() =>
-      DynamoDB.putItem(tableName, key, data)
+  public static purgeTable(tableName: string): Promise<string> {
+    return DynamoDB.purge(tableName);
+  }
+
+  public static existsTable(tableName: string): Promise<boolean> {
+    return DynamoDB.existsTable(tableName);
+  }
+
+  public static hasData(
+    key: string | string[],
+    tableName?: string
+  ): Promise<boolean> {
+    const name = tableName || Operations.config().tableName;
+    return DynamoDB.existsKey(name, key);
+  }
+
+  public static getData(
+    key: string | string[],
+    tableName?: string
+  ): Promise<whatever> {
+    const name = tableName || Operations.config().tableName;
+    return DynamoDB.getData(name, key);
+  }
+
+  public static putData(
+    key: string,
+    data: whatever | whatever[],
+    tableName?: string
+  ): Promise<void> {
+    const name = tableName || Operations.config().tableName;
+    return DynamoDB.waitCreate(name).then(() =>
+      DynamoDB.putData(name, key, data)
     );
   }
 
-  public static removeItem(key: string): Promise<void> {
-    const tableName = Operations.config().tableName;
-    return DynamoDB.removeItem(tableName, key);
+  public static removeData(
+    key: string | string[],
+    tableName?: string
+  ): Promise<void> {
+    const name = tableName || Operations.config().tableName;
+    return DynamoDB.removeData(name, key);
+  }
+
+  // legacy support
+  public static hasItem(
+    key: string | string[],
+    tableName?: string
+  ): Promise<boolean> {
+    return Operations.hasData(key, tableName);
+  }
+
+  // legacy support
+  public static hasItems(
+    key: string | string[],
+    tableName?: string
+  ): Promise<boolean> {
+    return Operations.hasData(key, tableName);
+  }
+
+  // legacy support
+  public static getItem(
+    key: string | string[],
+    tableName?: string
+  ): Promise<whatever> {
+    return Operations.getData(key, tableName);
+  }
+
+  // legacy support
+  public static getItems(
+    key: string | string[],
+    tableName?: string
+  ): Promise<whatever> {
+    return Operations.getData(key, tableName);
+  }
+
+  // legacy support
+  public static putItem(
+    key: string,
+    data: whatever | whatever[],
+    tableName?: string
+  ): Promise<void> {
+    return Operations.putData(key, data, tableName);
+  }
+
+  // legacy support
+  public static putItems(
+    key: string,
+    data: whatever | whatever[],
+    tableName?: string
+  ): Promise<void> {
+    return Operations.putData(key, data, tableName);
+  }
+
+  // legacy support
+  public static removeItem(
+    key: string | string[],
+    tableName?: string
+  ): Promise<void> {
+    return Operations.removeData(key, tableName);
+  }
+
+  // legacy support
+  public static removeItems(
+    key: string | string[],
+    tableName?: string
+  ): Promise<void> {
+    return Operations.removeData(key, tableName);
   }
 }
 
