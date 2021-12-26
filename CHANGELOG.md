@@ -6,11 +6,13 @@
 
 **Implemented enhancements:**
 
+- Resolve wildcard postfix search where no other matching characters are present [\#21](https://github.com/vulcancreative/serverless-storage/issues/21)
 - Switch to Scan mechanism for batched requests [\#19](https://github.com/vulcancreative/serverless-storage/issues/19)
 - Patch options usage with proper type definition for Framework v3 [\#17](https://github.com/vulcancreative/serverless-storage/issues/17)
 
 **Merged pull requests:**
 
+- Resolve wildcard postfix search where no other matching characters are present. Closes \#21 [\#22](https://github.com/vulcancreative/serverless-storage/pull/22) ([chris-calo](https://github.com/chris-calo))
 - Switch to Scan mechanism for batched requests. Closes \#19 [\#20](https://github.com/vulcancreative/serverless-storage/pull/20) ([chris-calo](https://github.com/chris-calo))
 - Patch options usage with proper type definition for Framework v3. Closes \#17 [\#18](https://github.com/vulcancreative/serverless-storage/pull/18) ([chris-calo](https://github.com/chris-calo))
 
