@@ -190,16 +190,16 @@ class DynamoDB {
   ): Promise<whatever | whatever[]> {
     const isMultiple = Array.isArray(key);
 
-    const params = {
-      TableName: tableName,
-      ...DynamoDB.parseQueryParams((isMultiple ? key : [key]) as string[]),
-    };
-
-    if (DynamoDB.verboseMode()) {
-      console.log("[getData] params : ", JSON.stringify(params, null, 2));
-    }
-
     try {
+      const params = {
+        TableName: tableName,
+        ...DynamoDB.parseQueryParams((isMultiple ? key : [key]) as string[]),
+      };
+
+      if (DynamoDB.verboseMode()) {
+        console.log("[getData] params : ", JSON.stringify(params, null, 2));
+      }
+
       const response = await DynamoDB.dial().query(params).promise();
       const valid = !!response?.Items;
 
@@ -343,8 +343,8 @@ class DynamoDB {
   }
 
   public static validKey(key: string): boolean {
-    const r = /(\S+:\S+)+(:\*)?/;
-    return r.test(key) && key[key.length - 1] !== ":";
+    const r = /(\S+:?\S+)+:?\*?/;
+    return r.test(key);
   }
 
   public static parseParamExact(key: string, idx: number): whatever {
@@ -365,16 +365,15 @@ class DynamoDB {
 
   public static parseQueryParams(keys: string[]): whatever {
     const pks = [];
-    const keyAttributeValues = {};
 
-    const keyExpression = keys.reduce(
+    const keyAttributeValues = {};
+    const keyEvaluation = keys.reduce(
       (a, c, i) => {
         if (!DynamoDB.validKey(c)) throw `Key "${c}" is invalid`;
+        const itemParts = c.indexOf(":") > -1 ? c.split(":") : [c];
 
-        const itemParts = c.split(":");
+        // handle primary key assembly
         const pk = itemParts[0];
-        const id = itemParts.slice(1).join(":");
-
         if (pks.indexOf(pk) < 0) {
           pks.push(pk);
 
@@ -385,28 +384,43 @@ class DynamoDB {
           keyAttributeValues[pkLabel] = { S: pk };
         }
 
-        const info =
-          id.indexOf("*") > -1
-            ? DynamoDB.parseParamWildcard(id, i)
-            : DynamoDB.parseParamExact(id, i);
+        // handle ID assembly
+        if (itemParts.length > 1) {
+          const id = itemParts.slice(1).join(":");
 
-        keyAttributeValues[info.label] = { S: info.value };
+          const info =
+            id.indexOf("*") > -1
+              ? DynamoDB.parseParamWildcard(id, i)
+              : DynamoDB.parseParamExact(id, i);
 
-        const idFirst = i === 0;
-        a.id = `${a.id}${idFirst ? "" : " AND "}${info.expression}`;
+          if (info.value && info.value.length > 0) {
+            keyAttributeValues[info.label] = { S: info.value };
+
+            const idFirst = i === 0;
+            a.id = `${a.id}${idFirst ? "" : " AND "}${info.expression}`;
+          }
+        }
 
         return a;
       },
       { pk: "", id: "" }
     );
 
-    if (pks.length > 1) keyExpression.pk = `(${keyExpression.pk})`;
+    if (pks.length > 1) keyEvaluation.pk = `(${keyEvaluation.pk})`;
+
+    const validPK = keyEvaluation.pk && keyEvaluation.pk.length > 0;
+    const validID = keyEvaluation.id && keyEvaluation.id.length > 0;
 
     const params = {
-      KeyConditionExpression: `${keyExpression.pk} AND ${keyExpression.id}`,
+      KeyConditionExpression: [
+        validPK ? keyEvaluation.pk : null,
+        validID ? keyEvaluation.id : null,
+      ]
+        .filter((k) => k)
+        .join(" AND "),
       ExpressionAttributeNames: {
-        "#pk": "PK",
-        "#id": "ID",
+        ...(validPK ? { "#pk": "PK" } : {}),
+        ...(validID ? { "#id": "ID" } : {}),
       },
       ExpressionAttributeValues: keyAttributeValues,
     };
