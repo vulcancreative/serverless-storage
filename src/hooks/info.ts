@@ -1,37 +1,21 @@
-import * as AWS from "aws-sdk";
+import DynamoDB from "../aws/dynamodb";
+import S3 from "../aws/s3";
+import { ServerlessInstance, whatever } from "../types";
 
-import { ServerlessInstance, ServerlessStorage } from "../types";
+const infoHook = (
+  serverless: ServerlessInstance
+): Promise<[string | void, string | void]> => {
+  const options = serverless.service.custom.serverlessStorage as whatever;
 
-const buildConfig = (options: ServerlessStorage) => {
-  return {
-    TableName: options.tableName,
-  };
-};
+  const a = options.tableName
+    ? DynamoDB.info(options.tableName)
+    : Promise.resolve();
 
-// eslint-disable-next-line
-const infoHook = (serverless: ServerlessInstance) => {
-  const options = serverless.service.custom.serverlessStorage;
-  const config = buildConfig(options);
+  const b = options.bucketName
+    ? S3.info(options.bucketName)
+    : Promise.resolve();
 
-  const db = new AWS.DynamoDB({
-    apiVersion: "2012-08-10",
-    region: serverless.providers.aws.getRegion() || options.defaultRegion,
-  });
-
-  return db
-    .describeTable(config)
-    .promise()
-    .then((response) => {
-      const status = response.Table.TableStatus.toLowerCase();
-      const tableName = response.Table.TableName;
-
-      if (status === "active") {
-        return `Storage is ready in table "${tableName}"`;
-      }
-
-      return `Storage status of table "${tableName}" is "${status}"`;
-    })
-    .catch(() => "Storage doesn't exist");
+  return Promise.all([a, b]);
 };
 
 export default infoHook;

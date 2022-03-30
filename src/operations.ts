@@ -1,4 +1,7 @@
+import * as stream from "stream";
+
 import DynamoDB from "./aws/dynamodb";
+import S3 from "./aws/s3";
 import { whatever } from "./types";
 
 type OperationsConfig = {
@@ -28,6 +31,32 @@ class Operations {
   ): Promise<whatever> {
     if (wait) return DynamoDB.waitRemove(tableName);
     return DynamoDB.remove(tableName);
+  }
+
+  public static createBucket(name: string, wait = false): Promise<whatever> {
+    if (wait) return S3.waitCreate(name);
+    return S3.create(name);
+  }
+
+  public static removeBucket(name: string, wait = false): Promise<whatever> {
+    if (wait) return S3.waitRemove(name);
+    return S3.remove(name);
+  }
+
+  public static upload(key: string, data: whatever): Promise<string> {
+    return S3.upload(key, data);
+  }
+
+  public static uploadFile(key: string, file: string): Promise<string> {
+    return S3.uploadFile(key, file);
+  }
+
+  public static downloadStream(key: string): stream.Stream {
+    return S3.downloadStream(key);
+  }
+
+  public static downloadSelect(key: string, opt: whatever): Promise<Buffer> {
+    return S3.downloadSelect(key, opt);
   }
 
   public static purgeTable(tableName: string): Promise<string> {

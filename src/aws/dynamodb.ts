@@ -12,6 +12,27 @@ class DynamoDB {
     });
   }
 
+  public static async info(tableName: string): Promise<string> {
+    const config = {
+      TableName: tableName,
+    };
+
+    return await DynamoDB.dial()
+      .describeTable(config)
+      .promise()
+      .then((response) => {
+        const status = response.Table.TableStatus.toLowerCase();
+        const tableName = response.Table.TableName;
+
+        if (status === "active") {
+          return `Database storage is ready in table "${tableName}"`;
+        }
+
+        return `Database storage status of table "${tableName}" is "${status}"`;
+      })
+      .catch(() => "Database storage doesn't exist");
+  }
+
   public static async create(tableName: string): Promise<string> {
     const kmsKey = process.env.STORAGE_KMS_KEY;
     const hasKey = !!kmsKey;
@@ -58,7 +79,7 @@ class DynamoDB {
       return message;
     } catch (err) {
       if (err.message.indexOf("Table already exists") > -1) {
-        return "Storage already exists";
+        return "Database storage already exists";
       }
 
       return `Failed to create storage : ${err.message}`;
@@ -73,15 +94,15 @@ class DynamoDB {
     try {
       const response = await DynamoDB.dial().deleteTable(config).promise();
       const { TableName } = response.TableDescription;
-      const message = `Successfully remove storage table "${TableName}"`;
 
+      const message = `Successfully removed database storage "${TableName}"`;
       return message;
     } catch (err) {
       if (err.message.indexOf("not found") > -1) {
-        return "Storage doesn't exist";
+        return "Database storage doesn't exist";
       }
 
-      return `Failed to remove storage : ${err.message}`;
+      return `Failed to remove database storage : ${err.message}`;
     }
   }
 
@@ -276,6 +297,7 @@ class DynamoDB {
         console.log("[putData] params : ", JSON.stringify(params, null, 2));
       }
 
+      if (item) await DynamoDB.removeData(tableName, key);
       const res = await DynamoDB.dial().putItem(params).promise();
       return res;
     });

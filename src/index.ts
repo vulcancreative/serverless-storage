@@ -26,25 +26,25 @@ class ServerlessStorage {
       storage: {
         commands: {
           create: {
-            usage: "Initialises storage with default/provided table name",
+            usage: "Initialises database and/or file storage",
             lifecycleEvents: ["create", "initialize"],
           },
           purge: {
-            usage: "Purges some data from a table",
+            usage: "Purges a database table or file storage bucket",
             lifecycleEvents: ["delete", "initialize"],
             options: {
               all: {
-                usage: "Removes all data from the storage table",
+                usage: "Removes all data from storage",
                 type: "boolean",
               },
               key: {
-                usage: "Removes data from table for a given key",
+                usage: "Removes data for a given key",
                 type: "string",
               },
             },
           },
           remove: {
-            usage: "Removes the table and all of its associated data",
+            usage: "Removes the table and/or bucket and all associated data",
             lifecycleEvents: ["delete", "initialize"],
           },
         },
@@ -62,16 +62,28 @@ class ServerlessStorage {
   }
 
   public afterInfoHook(): Promise<void> {
-    return infoHook(this.serverless).then((message) => Log.print(message));
+    return infoHook(this.serverless).then((messages) => {
+      messages.forEach((message) => {
+        if (message) Log.print(message);
+      });
+    });
   }
 
   public beforeDeployHook(): Promise<void> {
-    return createHook(this.serverless).then((message) => Log.print(message));
+    return createHook(this.serverless).then((messages) => {
+      messages.forEach((message) => {
+        if (message) Log.print(message);
+      });
+    });
   }
 
   // eslint-disable-next-line
   public async storageCreateHook(): Promise<void> {
-    return createHook(this.serverless).then((message) => Log.print(message));
+    return createHook(this.serverless).then((messages) => {
+      messages.forEach((message) => {
+        if (message) Log.print(message);
+      });
+    });
   }
 
   public storagePurgeHook(): void {
@@ -79,7 +91,11 @@ class ServerlessStorage {
   }
 
   public async storageRemoveHook(): Promise<void> {
-    return removeHook(this.serverless).then((message) => Log.print(message));
+    return removeHook(this.serverless).then((messages) => {
+      messages.forEach((message) => {
+        if (message) Log.print(message);
+      });
+    });
   }
 }
 
