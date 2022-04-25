@@ -1,0 +1,58 @@
+service: vulcan-storage-test # NOTE: update this with your service name
+frameworkVersion: ">=2.71.0"
+
+provider:
+  name: "aws"
+  architecture: "arm64"
+  runtime: "nodejs14.x"
+  region: us-east-2
+  apiGateway:
+    minimumCompressionSize: 1024
+    shouldStartNameWithService: true
+  environment:
+    STORAGE_DEFAULT_REGION: us-east-2
+    STORAGE_BUCKET_NAME: '${self:service}-${opt:stage, self:provider.stage}-storage'
+    STORAGE_TABLE_NAME: '${self:service}-${opt:stage, self:provider.stage}-storage'
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:CreateTable"
+            - "dynamodb:DeleteItem"
+            - "dynamodb:DeleteTable"
+            - "dynamodb:DescribeTable"
+            - "dynamodb:GetItem"
+            - "dynamodb:PutItem"
+            - "dynamodb:Query"
+            - "iam:PassRole"
+            - "kms:CreateGrant"
+            - "kms:Decrypt"
+            - "kms:DescribeKey"
+            - "kms:Encrypt"
+            - "kms:GenerateDataKey"
+            - "kms:RevokeGrant"
+            - "s3:*"
+          Resource: "*"
+
+
+functions:
+  insert:
+    handler: handler.insert
+    timeout: 60
+  check:
+    handler: handler.check
+    timeout: 60
+  get:
+    handler: handler.get
+    timeout: 60
+
+custom:
+  serverlessStorage:
+    bucketName: '${self:service}-${opt:stage, self:provider.stage}-storage'
+    tableName: '${self:service}-${opt:stage, self:provider.stage}-storage'
+    defaultRegion: us-east-2
+
+plugins:
+  - serverless-esbuild
+  - "@vulcancreative/serverless-storage"
