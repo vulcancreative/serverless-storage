@@ -12,6 +12,7 @@
 
 **Merged pull requests:**
 
+- Add branding to `README` file [\#28](https://github.com/vulcancreative/serverless-storage/pull/28) ([chris-calo](https://github.com/chris-calo))
 - Resolve wildcard postfix search where no other matching characters are present. Closes \#21 [\#22](https://github.com/vulcancreative/serverless-storage/pull/22) ([chris-calo](https://github.com/chris-calo))
 - Switch to Scan mechanism for batched requests. Closes \#19 [\#20](https://github.com/vulcancreative/serverless-storage/pull/20) ([chris-calo](https://github.com/chris-calo))
 - Patch options usage with proper type definition for Framework v3. Closes \#17 [\#18](https://github.com/vulcancreative/serverless-storage/pull/18) ([chris-calo](https://github.com/chris-calo))
