@@ -1,0 +1,1 @@
+[![Serverless Storage, for Framework](https://raw.githubusercontent.com/vulcancreative/serverless-storage/94f9538eb2269d637b1bc1f461ff4216100e54f3/assets/docs/readme/readme-image.png)](https://serverless.com/framework)
