@@ -42,9 +42,61 @@ describe('Test basic functionalities', () => {
         sandbox.assert.calledOnce(waitCreate);
     }).timeout(TIMEOUT);
 
+    it('should properly put data in in dynamoDB (legacy)', async () => {
+        const db = new AWS.DynamoDB({
+            apiVersion: "2012-08-10",
+            region: "us-west-2",
+        })
+
+        sandbox.stub(DynamoDB, "dial").returns(db);
+        sandbox.stub(db, "putItem").returns(Promise.resolve(true));
+        sandbox.stub(DynamoDB, "removeData").returns(Promise.resolve(true));
+
+        const waitCreate = sandbox.spy(DynamoDB, "waitCreate");
+        const putData = sandbox.spy(DynamoDB, "putData");
+        await plugin.serverlessStorage.putItem('key', 'data', 'table-name');
+        waitCreate.restore();
+        putData.restore();
+        sandbox.assert.calledOnce(putData);
+        sandbox.assert.calledOnce(waitCreate);
+    }).timeout(TIMEOUT);
+
+    it('should properly put data in in dynamoDB (legacy - multiple items)', async () => {
+        const db = new AWS.DynamoDB({
+            apiVersion: "2012-08-10",
+            region: "us-west-2",
+        })
+
+        sandbox.stub(DynamoDB, "dial").returns(db);
+        sandbox.stub(db, "putItem").returns(Promise.resolve(true));
+        sandbox.stub(DynamoDB, "removeData").returns(Promise.resolve(true));
+
+        const waitCreate = sandbox.spy(DynamoDB, "waitCreate");
+        const putData = sandbox.spy(DynamoDB, "putData");
+        await plugin.serverlessStorage.putItems('key', 'data', 'table-name');
+        waitCreate.restore();
+        putData.restore();
+        sandbox.assert.calledOnce(putData);
+        sandbox.assert.calledOnce(waitCreate);
+    }).timeout(TIMEOUT);
+
     it('should properly get data in dynamoDB', async () => {
         const getData = sandbox.spy(DynamoDB, "getData");
         await plugin.serverlessStorage.getData('key', 'table-name');
+        getData.restore();
+        sandbox.assert.calledOnce(getData);
+    }).timeout(TIMEOUT);
+
+    it('should properly get data in dynamoDB (legacy)', async () => {
+        const getData = sandbox.spy(DynamoDB, "getData");
+        await plugin.serverlessStorage.getItem('key', 'table-name');
+        getData.restore();
+        sandbox.assert.calledOnce(getData);
+    }).timeout(TIMEOUT);
+
+    it('should properly get data in dynamoDB (legacy - get multiple data)', async () => {
+        const getData = sandbox.spy(DynamoDB, "getData");
+        await plugin.serverlessStorage.getItems('key', 'table-name');
         getData.restore();
         sandbox.assert.calledOnce(getData);
     }).timeout(TIMEOUT);
@@ -56,6 +108,39 @@ describe('Test basic functionalities', () => {
         sandbox.assert.calledOnce(removeData);
     }).timeout(TIMEOUT);
 
+    it('should properly remove data in dynamoDB (legacy)', async () => {
+        const removeData = sandbox.spy(DynamoDB, "removeData");
+        await plugin.serverlessStorage.removeItem('key', 'table-name');
+        removeData.restore();
+        sandbox.assert.calledOnce(removeData);
+    }).timeout(TIMEOUT);
 
+    it('should properly remove data in dynamoDB (legacy - multiple items)', async () => {
+        const removeData = sandbox.spy(DynamoDB, "removeData");
+        await plugin.serverlessStorage.removeItems('key', 'table-name');
+        removeData.restore();
+        sandbox.assert.calledOnce(removeData);
+    }).timeout(TIMEOUT);
+
+    it('should be able to check if data exists in dynamoDB', async () => {
+        const existsKey = sandbox.spy(DynamoDB, "existsKey");
+        await plugin.serverlessStorage.hasData('key', 'table-name');
+        existsKey.restore();
+        sandbox.assert.calledOnce(existsKey);
+    }).timeout(TIMEOUT);
+
+    it('should be able to check if data exists in dynamoDB (legacy)', async () => {
+        const existsKey = sandbox.spy(DynamoDB, "existsKey");
+        await plugin.serverlessStorage.hasItem('key', 'table-name');
+        existsKey.restore();
+        sandbox.assert.calledOnce(existsKey);
+    }).timeout(TIMEOUT);
+
+    it('should be able to check if data exists in dynamoDB (legacy - check multiple data)', async () => {
+        const existsKey = sandbox.spy(DynamoDB, "existsKey");
+        await plugin.serverlessStorage.hasItems('key', 'table-name');
+        existsKey.restore();
+        sandbox.assert.calledOnce(existsKey);
+    }).timeout(TIMEOUT);
 
 });
