@@ -19,6 +19,7 @@
 
 **Merged pull requests:**
 
+- Put test in yarn script. Closes \#29 [\#31](https://github.com/vulcancreative/serverless-storage/pull/31) ([ffebriansyah](https://github.com/ffebriansyah))
 - Start adding unit tests. Progress \#29 [\#30](https://github.com/vulcancreative/serverless-storage/pull/30) ([ffebriansyah](https://github.com/ffebriansyah))
 - Add branding to `README` file [\#28](https://github.com/vulcancreative/serverless-storage/pull/28) ([chris-calo](https://github.com/chris-calo))
 - Add information of the library usage and example project. Closes \#25 [\#26](https://github.com/vulcancreative/serverless-storage/pull/26) ([ffebriansyah](https://github.com/ffebriansyah))
