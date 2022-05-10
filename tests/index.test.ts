@@ -4,6 +4,7 @@ import { describe, beforeEach, afterEach, it} from "mocha";
 import ServerlessStorage from '../src/index';
 // import {ServerlessInstance, ServerlessOptions} from "../src/types";
 import DynamoDB from "../src/aws/dynamodb";
+import S3 from "../src/aws/s3";
 import * as AWS from "aws-sdk";
 // import Operations from "../src/operations";
 // import * as assert from "assert";
@@ -11,7 +12,7 @@ import * as AWS from "aws-sdk";
 const plugin = ServerlessStorage;
 const TIMEOUT = 10000;
 
-describe('Test create table', () => {
+describe('Test create tables on DynamoDB', () => {
     const sandbox = sinon.createSandbox();
 
     afterEach(() => {
@@ -54,6 +55,54 @@ describe('Test create table', () => {
         sandbox.assert.calledOnce(waitRemove);
     }).timeout(TIMEOUT);
 })
+
+describe('Test create buckets in S3', () => {
+  const sandbox = sinon.createSandbox();
+
+  beforeEach(() => {
+      sandbox.stub(S3, "existsBucket").returns(Promise.resolve(false));
+      sandbox.stub(S3, "waitForCreate").returns(Promise.resolve(true));
+
+      sandbox.stub(S3, "purge").returns(Promise.resolve(true));
+      sandbox.stub(S3, "waitForRemove").returns(Promise.resolve(true));
+  });
+
+  afterEach(() => {
+    sandbox.restore();
+  });
+
+  it('should be able to create a bucket', async () => {
+      const create = sandbox.spy(S3, "create");
+      await plugin.serverlessStorage.createBucket('bucket-name');
+      create.restore();
+      sandbox.assert.calledOnce(create);
+  }).timeout(TIMEOUT);
+
+  it('should be able to create a bucket (with wait)', async () => {
+      sandbox.stub(S3, "create").returns(Promise.resolve(true));
+
+      const waitCreate = sandbox.spy(S3, "waitCreate");
+      await plugin.serverlessStorage.createBucket('bucket-name', true);
+      waitCreate.restore();
+      sandbox.assert.calledOnce(waitCreate);
+  }).timeout(TIMEOUT);
+
+  it('should be able to remove a bucket', async () => {
+      const remove = sandbox.spy(S3, "remove");
+      await plugin.serverlessStorage.removeBucket('bucket-name');
+      remove.restore();
+      sandbox.assert.calledOnce(remove);
+  }).timeout(TIMEOUT);
+
+  it('should be able to remove a bucket (with wait)', async () => {
+      sandbox.stub(S3, "remove").returns(Promise.resolve(true));
+
+      const waitRemove = sandbox.spy(S3, "waitRemove");
+      await plugin.serverlessStorage.removeBucket('bucket-name', true);
+      waitRemove.restore();
+      sandbox.assert.calledOnce(waitRemove);
+  }).timeout(TIMEOUT);
+});
 
 describe('Test basic functionalities', () => {
     const sandbox = sinon.createSandbox();
