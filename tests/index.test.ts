@@ -11,6 +11,50 @@ import * as AWS from "aws-sdk";
 const plugin = ServerlessStorage;
 const TIMEOUT = 10000;
 
+describe('Test create table', () => {
+    const sandbox = sinon.createSandbox();
+
+    afterEach(() => {
+        sandbox.restore();
+    })
+
+    it('should be able to create a table', async () => {
+        const create = sandbox.spy(DynamoDB, "create");
+        await plugin.serverlessStorage.createTable('table-name');
+        create.restore();
+        sandbox.assert.calledOnce(create);
+    }).timeout(TIMEOUT);
+
+    it('should be able to create a table (with wait)', async () => {
+        sandbox.stub(DynamoDB, "existsTable").returns(Promise.resolve(false));
+        sandbox.stub(DynamoDB, "create").returns(Promise.resolve(true));
+        sandbox.stub(DynamoDB, "waitForCreate").returns(Promise.resolve(true));
+
+        const waitCreate = sandbox.spy(DynamoDB, "waitCreate");
+        await plugin.serverlessStorage.createTable('table-name', true);
+        waitCreate.restore();
+        sandbox.assert.calledOnce(waitCreate);
+    }).timeout(TIMEOUT);
+
+    it('should be able to remove a table', async () => {
+        const remove = sandbox.spy(DynamoDB, "remove");
+        await plugin.serverlessStorage.removeTable('table-name');
+        remove.restore();
+        sandbox.assert.calledOnce(remove);
+    }).timeout(TIMEOUT);
+
+    it('should be able to remove a table (with wait)', async () => {
+        sandbox.stub(DynamoDB, "existsTable").returns(Promise.resolve(false));
+        sandbox.stub(DynamoDB, "remove").returns(Promise.resolve(true));
+        sandbox.stub(DynamoDB, "waitForRemove").returns(Promise.resolve(true));
+
+        const waitRemove = sandbox.spy(DynamoDB, "waitRemove");
+        await plugin.serverlessStorage.removeTable('table-name', true);
+        waitRemove.restore();
+        sandbox.assert.calledOnce(waitRemove);
+    }).timeout(TIMEOUT);
+})
+
 describe('Test basic functionalities', () => {
     const sandbox = sinon.createSandbox();
     beforeEach(() => {
