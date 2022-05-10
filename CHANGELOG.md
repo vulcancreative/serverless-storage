@@ -6,16 +6,20 @@
 
 **Implemented enhancements:**
 
+- Add branding to `README` file [\#27](https://github.com/vulcancreative/serverless-storage/issues/27)
 - Resolve wildcard postfix search where no other matching characters are present [\#21](https://github.com/vulcancreative/serverless-storage/issues/21)
 - Switch to Scan mechanism for batched requests [\#19](https://github.com/vulcancreative/serverless-storage/issues/19)
 - Patch options usage with proper type definition for Framework v3 [\#17](https://github.com/vulcancreative/serverless-storage/issues/17)
+- Write README [\#6](https://github.com/vulcancreative/serverless-storage/issues/6)
 
 **Closed issues:**
 
+- Implement unit test [\#29](https://github.com/vulcancreative/serverless-storage/issues/29)
 - Add brief information to `README` [\#25](https://github.com/vulcancreative/serverless-storage/issues/25)
 
 **Merged pull requests:**
 
+- Start adding unit tests. Progress \#29 [\#30](https://github.com/vulcancreative/serverless-storage/pull/30) ([ffebriansyah](https://github.com/ffebriansyah))
 - Add branding to `README` file [\#28](https://github.com/vulcancreative/serverless-storage/pull/28) ([chris-calo](https://github.com/chris-calo))
 - Add information of the library usage and example project. Closes \#25 [\#26](https://github.com/vulcancreative/serverless-storage/pull/26) ([ffebriansyah](https://github.com/ffebriansyah))
 - Resolve wildcard postfix search where no other matching characters are present. Closes \#21 [\#22](https://github.com/vulcancreative/serverless-storage/pull/22) ([chris-calo](https://github.com/chris-calo))
