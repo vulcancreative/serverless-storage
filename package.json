@@ -14,7 +14,7 @@
   "main": "dist/src/index.js",
   "bin": {},
   "scripts": {
-    "test": "",
+    "test": "nyc mocha -r ts-node/register --timeout 300000 --recursive tests/**/*.test.ts --bail",
     "integration-test": "",
     "build": "tsc --project .",
     "prepare": "npm run build"
