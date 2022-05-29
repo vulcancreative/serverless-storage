@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Implement `--tableName` flag to allow for custom table names via the CLI [\#34](https://github.com/vulcancreative/serverless-storage/issues/34)
 - Add branding to `README` file [\#27](https://github.com/vulcancreative/serverless-storage/issues/27)
 - Resolve wildcard postfix search where no other matching characters are present [\#21](https://github.com/vulcancreative/serverless-storage/issues/21)
 - Switch to Scan mechanism for batched requests [\#19](https://github.com/vulcancreative/serverless-storage/issues/19)
@@ -19,6 +20,7 @@
 
 **Merged pull requests:**
 
+- Implement `--tableName` flag to allow for custom table names via the CLI. Closes \#34 [\#35](https://github.com/vulcancreative/serverless-storage/pull/35) ([chris-calo](https://github.com/chris-calo))
 - Put test in yarn script. Closes \#29 [\#31](https://github.com/vulcancreative/serverless-storage/pull/31) ([ffebriansyah](https://github.com/ffebriansyah))
 - Start adding unit tests. Progress \#29 [\#30](https://github.com/vulcancreative/serverless-storage/pull/30) ([ffebriansyah](https://github.com/ffebriansyah))
 - Add branding to `README` file [\#28](https://github.com/vulcancreative/serverless-storage/pull/28) ([chris-calo](https://github.com/chris-calo))
