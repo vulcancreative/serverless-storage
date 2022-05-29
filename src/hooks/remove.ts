@@ -3,17 +3,16 @@ import S3 from "../aws/s3";
 import { ServerlessInstance, whatever } from "../types";
 
 const removeHook = (
-  serverless: ServerlessInstance
+  serverless: ServerlessInstance,
+  options: whatever
 ): Promise<[string | void, string | void]> => {
-  const options = serverless.service.custom.serverlessStorage as whatever;
+  const config = serverless.service.custom.serverlessStorage as whatever;
 
-  const a = options.tableName
-    ? DynamoDB.remove(options.tableName)
-    : Promise.resolve();
+  const tableName = options.tableName || config.tableName || null;
+  const bucketName = options.bucketName || config.bucketName || null;
 
-  const b = options.bucketName
-    ? S3.remove(options.bucketName)
-    : Promise.resolve();
+  const a = tableName ? DynamoDB.remove(tableName) : Promise.resolve();
+  const b = bucketName ? S3.remove(bucketName) : Promise.resolve();
 
   return Promise.all([a, b]);
 };

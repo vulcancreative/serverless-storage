@@ -28,6 +28,16 @@ class ServerlessStorage {
           create: {
             usage: "Initialises database and/or file storage",
             lifecycleEvents: ["create", "initialize"],
+            options: {
+              tableName: {
+                usage: "Optionally allows for explicit table name",
+                type: "string",
+              },
+              bucketName: {
+                usage: "Optionally allows for explicit bucket name",
+                type: "string",
+              },
+            },
           },
           purge: {
             usage: "Purges a database table or file storage bucket",
@@ -46,6 +56,16 @@ class ServerlessStorage {
           remove: {
             usage: "Removes the table and/or bucket and all associated data",
             lifecycleEvents: ["delete", "initialize"],
+            options: {
+              tableName: {
+                usage: "Optionally allows for explicit table name",
+                type: "string",
+              },
+              bucketName: {
+                usage: "Optionally allows for explicit bucket name",
+                type: "string",
+              },
+            },
           },
         },
       },
@@ -70,7 +90,7 @@ class ServerlessStorage {
   }
 
   public beforeDeployHook(): Promise<void> {
-    return createHook(this.serverless).then((messages) => {
+    return createHook(this.serverless, this.options).then((messages) => {
       messages.forEach((message) => {
         if (message) Log.print(message);
       });
@@ -79,7 +99,7 @@ class ServerlessStorage {
 
   // eslint-disable-next-line
   public async storageCreateHook(): Promise<void> {
-    return createHook(this.serverless).then((messages) => {
+    return createHook(this.serverless, this.options).then((messages) => {
       messages.forEach((message) => {
         if (message) Log.print(message);
       });
@@ -91,7 +111,7 @@ class ServerlessStorage {
   }
 
   public async storageRemoveHook(): Promise<void> {
-    return removeHook(this.serverless).then((messages) => {
+    return removeHook(this.serverless, this.options).then((messages) => {
       messages.forEach((message) => {
         if (message) Log.print(message);
       });
