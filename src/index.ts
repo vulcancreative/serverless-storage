@@ -28,6 +28,12 @@ class ServerlessStorage {
           create: {
             usage: "Initialises database and/or file storage",
             lifecycleEvents: ["create", "initialize"],
+            options: {
+              tableName: {
+                usage: "Optionally allows for explicit table name",
+                type: "string",
+              },
+            },
           },
           purge: {
             usage: "Purges a database table or file storage bucket",
