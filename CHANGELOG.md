@@ -15,11 +15,13 @@
 
 **Closed issues:**
 
+- Include sponsors in `README` [\#36](https://github.com/vulcancreative/serverless-storage/issues/36)
 - Implement unit test [\#29](https://github.com/vulcancreative/serverless-storage/issues/29)
 - Add brief information to `README` [\#25](https://github.com/vulcancreative/serverless-storage/issues/25)
 
 **Merged pull requests:**
 
+- Include sponsors in `README`. Closes \#36 [\#37](https://github.com/vulcancreative/serverless-storage/pull/37) ([chris-calo](https://github.com/chris-calo))
 - Implement `--tableName` flag to allow for custom table names via the CLI. Closes \#34 [\#35](https://github.com/vulcancreative/serverless-storage/pull/35) ([chris-calo](https://github.com/chris-calo))
 - Put test in yarn script. Closes \#29 [\#31](https://github.com/vulcancreative/serverless-storage/pull/31) ([ffebriansyah](https://github.com/ffebriansyah))
 - Start adding unit tests. Progress \#29 [\#30](https://github.com/vulcancreative/serverless-storage/pull/30) ([ffebriansyah](https://github.com/ffebriansyah))
