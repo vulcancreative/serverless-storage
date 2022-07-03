@@ -122,3 +122,10 @@ const data = await serverlessStorage.getData(myKey, myTable)
 
 ## Example Project
 Example implementation for this project can be found [here](https://github.com/vulcancreative/serverless-storage-test)
+
+
+## Sponsors
+
+Financing of this project's development is primarily sponsored by [Vulcan
+Creative, a boutique digital product firm](https://vulcanca.com) and
+[Kilo, Social Media for the Antisocial](https://kilo.ai).
