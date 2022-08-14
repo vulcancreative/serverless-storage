@@ -218,20 +218,75 @@ class DynamoDB {
       };
 
       if (DynamoDB.verboseMode()) {
-        console.log("[getData] params : ", JSON.stringify(params, null, 2));
+        console.log(
+          "[getData] params : ",
+          JSON.stringify(params, null, 2)
+        );
       }
 
-      const response = await DynamoDB.dial().query(params).promise();
+      let response = await DynamoDB.dial().query(params).promise();
       const valid = !!response?.Items;
 
       if (valid) {
-        const isMultiple = response.Count > 1;
+        const processResponse = (response): whatever | whatever[] => {
+          const isMultiple = response.Count > 1;
 
-        const items = response.Items.map((item) =>
-          JSON.parse(item.JSON.S)
-        ).sort((a, b) => a.createdAt - b.createdAt);
+          const items = response.Items.map((item) =>
+            JSON.parse(item.JSON.S)
+          ).sort((a, b) => a.createdAt - b.createdAt);
 
-        const res = isMultiple ? items : items[0];
+          const res = isMultiple ? items : items[0];
+          return res;
+        };
+
+        let lastEvaluatedKey = response.LastEvaluatedKey;
+        let res = processResponse(response);
+        let more = !!lastEvaluatedKey;
+
+        while (more) {
+          if (DynamoDB.verboseMode()) {
+            console.log(`[getData] More? : ${more}`);
+          }
+
+          const paramsPaginated = {
+            ...params,
+            ExclusiveStartKey: lastEvaluatedKey,
+          };
+
+          if (DynamoDB.verboseMode()) {
+            console.log(
+              "[getData] paramsPaginated : ",
+              JSON.stringify(paramsPaginated, null, 2)
+            );
+          }
+
+          let response = await DynamoDB
+            .dial()
+            .query(paramsPaginated)
+            .promise();
+
+          const valid = !!response?.Items;
+          if (!valid) {
+            if (DynamoDB.verboseMode()) {
+              console.log(
+                "[getData] Failed to fetch paginated query, response :",
+                JSON.stringify(response, null, 2)
+              );
+            }
+
+            more = false;
+            break;
+          }
+
+          const resTmp = processResponse(response);
+          lastEvaluatedKey = response.LastEvaluatedKey;
+          more = !!lastEvaluatedKey;
+
+          res = [
+            ...(Array.isArray(res) ? res : [res]),
+            ...(Array.isArray(resTmp) ? resTmp : [resTmp]),
+          ];
+        }
 
         return res;
       }
