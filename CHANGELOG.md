@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Implement `query` pagination [\#38](https://github.com/vulcancreative/serverless-storage/issues/38)
 - Implement `--tableName` flag to allow for custom table names via the CLI [\#34](https://github.com/vulcancreative/serverless-storage/issues/34)
 - Add branding to `README` file [\#27](https://github.com/vulcancreative/serverless-storage/issues/27)
 - Resolve wildcard postfix search where no other matching characters are present [\#21](https://github.com/vulcancreative/serverless-storage/issues/21)
@@ -21,6 +22,7 @@
 
 **Merged pull requests:**
 
+- Implement `query` pagination. Closes \#38 [\#39](https://github.com/vulcancreative/serverless-storage/pull/39) ([chris-calo](https://github.com/chris-calo))
 - Include sponsors in `README`. Closes \#36 [\#37](https://github.com/vulcancreative/serverless-storage/pull/37) ([chris-calo](https://github.com/chris-calo))
 - Implement `--tableName` flag to allow for custom table names via the CLI. Closes \#34 [\#35](https://github.com/vulcancreative/serverless-storage/pull/35) ([chris-calo](https://github.com/chris-calo))
 - Put test in yarn script. Closes \#29 [\#31](https://github.com/vulcancreative/serverless-storage/pull/31) ([ffebriansyah](https://github.com/ffebriansyah))
