@@ -207,14 +207,24 @@ class DynamoDB {
 
   public static async getData(
     tableName: string,
-    key: string | string[]
+    key: string | string[],
+    options: whatever = {}
   ): Promise<whatever | whatever[]> {
+    const defaultOptions = {
+      limit: 100,
+      reverse: false,
+    };
+    const opts = { ...defaultOptions, ...(options || {}) };
+
     const isMultiple = Array.isArray(key);
 
     try {
       const params = {
         TableName: tableName,
-        ...DynamoDB.parseQueryParams((isMultiple ? key : [key]) as string[]),
+        ...DynamoDB.parseQueryParams(
+          (isMultiple ? key : [key]) as string[],
+          opts
+        ),
       };
 
       if (DynamoDB.verboseMode()) {
@@ -225,6 +235,13 @@ class DynamoDB {
       }
 
       let response = await DynamoDB.dial().query(params).promise();
+      if (DynamoDB.verboseMode()) {
+        console.log(
+          "[getData] response (initial) : ",
+          JSON.stringify(response, null, 2)
+        );
+      }
+
       const valid = !!response?.Items;
 
       if (valid) {
@@ -248,6 +265,10 @@ class DynamoDB {
             console.log(`[getData] More? : ${more}`);
           }
 
+          if (options?.limit && parseInt(options.limit) <= res.length) {
+            break;
+          }
+
           const paramsPaginated = {
             ...params,
             ExclusiveStartKey: lastEvaluatedKey,
@@ -264,6 +285,13 @@ class DynamoDB {
             .dial()
             .query(paramsPaginated)
             .promise();
+
+          if (DynamoDB.verboseMode()) {
+            console.log(
+              "[getData] response (paginated) : ",
+              JSON.stringify(response, null, 2)
+            );
+          }
 
           const valid = !!response?.Items;
           if (!valid) {
@@ -440,7 +468,7 @@ class DynamoDB {
     return { label, expression: `begins_with(#id, ${label})`, value };
   }
 
-  public static parseQueryParams(keys: string[]): whatever {
+  public static parseQueryParams(keys: string[], opts: whatever): whatever {
     const pks = [];
 
     const keyAttributeValues = {};
@@ -500,6 +528,8 @@ class DynamoDB {
         ...(validID ? { "#id": "ID" } : {}),
       },
       ExpressionAttributeValues: keyAttributeValues,
+      ...(opts?.limit ? { Limit: opts.limit } : {}),
+      ...(opts?.reverse ? { ScanIndexForward: false } : {}),
     };
 
     return params;
