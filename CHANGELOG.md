@@ -6,6 +6,7 @@
 
 **Implemented enhancements:**
 
+- Allow `getData` queries to take a dictionary of options [\#40](https://github.com/vulcancreative/serverless-storage/issues/40)
 - Implement `query` pagination [\#38](https://github.com/vulcancreative/serverless-storage/issues/38)
 - Implement `--tableName` flag to allow for custom table names via the CLI [\#34](https://github.com/vulcancreative/serverless-storage/issues/34)
 - Add branding to `README` file [\#27](https://github.com/vulcancreative/serverless-storage/issues/27)
@@ -22,6 +23,7 @@
 
 **Merged pull requests:**
 
+- Allow `getData` queries to take a dictionary of options. Closes \#40 [\#41](https://github.com/vulcancreative/serverless-storage/pull/41) ([chris-calo](https://github.com/chris-calo))
 - Implement `query` pagination. Closes \#38 [\#39](https://github.com/vulcancreative/serverless-storage/pull/39) ([chris-calo](https://github.com/chris-calo))
 - Include sponsors in `README`. Closes \#36 [\#37](https://github.com/vulcancreative/serverless-storage/pull/37) ([chris-calo](https://github.com/chris-calo))
 - Implement `--tableName` flag to allow for custom table names via the CLI. Closes \#34 [\#35](https://github.com/vulcancreative/serverless-storage/pull/35) ([chris-calo](https://github.com/chris-calo))
