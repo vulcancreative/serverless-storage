@@ -77,10 +77,14 @@ class Operations {
 
   public static getData(
     key: string | string[],
-    tableName?: string
+    options?: whatever
   ): Promise<whatever> {
-    const name = tableName || Operations.config().tableName;
-    return DynamoDB.getData(name, key);
+    const isString = !!options?.toLowerCase;
+    const tableName = isString
+      ? options
+      : (options?.tableName || Operations.config().tableName);
+
+    return DynamoDB.getData(tableName, key, options);
   }
 
   public static putData(
@@ -121,17 +125,17 @@ class Operations {
   // legacy support
   public static getItem(
     key: string | string[],
-    tableName?: string
+    options?: whatever
   ): Promise<whatever> {
-    return Operations.getData(key, tableName);
+    return Operations.getData(key, options);
   }
 
   // legacy support
   public static getItems(
     key: string | string[],
-    tableName?: string
+    options?: whatever
   ): Promise<whatever> {
-    return Operations.getData(key, tableName);
+    return Operations.getData(key, options);
   }
 
   // legacy support
